@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Portal Laporan Magang dan TA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: control-room panel. Dark navy hero with lamp-style status chips, two big entry cards overlapping the hero edge, light content below. */
+:root {
+  --bg: #eef3f6;
+  --surface: #ffffff;
+  --ink: #0b2230;
+  --muted: #53697a;
+  --line: #d3dee5;
+  --navy: #0a2a3f;
+  --navy-2: #0f3b57;
+  --on-navy: #eaf4fa;
+  --on-navy-muted: #9fbccd;
+  --amber: #f5a524;
+  --amber-ink: #231500;
+  --teal: #12b3a0;
+  --teal-ink: #02201c;
+  --display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --body: "Barlow", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #07161f; --surface: #0e2431; --ink: #e8f1f6; --muted: #92aabb; --line: #1e3a4b;
+    --navy: #051823; --navy-2: #0b2c40; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #07161f; --surface: #0e2431; --ink: #e8f1f6; --muted: #92aabb; --line: #1e3a4b;
+  --navy: #051823; --navy-2: #0b2c40; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 1.05rem/1.6 var(--body); }
+a { color: inherit; }
+:focus-visible { outline: 3px solid var(--amber); outline-offset: 3px; }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+.mono { font-family: var(--mono); }
+
+/* Hero */
+.hero { background: radial-gradient(900px 400px at 85% -10%, var(--navy-2), transparent 70%), var(--navy); color: var(--on-navy); padding: 0 0 120px; position: relative; overflow: hidden; }
+.hero::before { content: ""; position: absolute; inset: 0; background-image: linear-gradient(var(--navy-2) 1px, transparent 1px), linear-gradient(90deg, var(--navy-2) 1px, transparent 1px); background-size: 44px 44px; opacity: .35; mask-image: linear-gradient(to bottom, #000, transparent 85%); -webkit-mask-image: linear-gradient(to bottom, #000, transparent 85%); }
+.hero .wrap { position: relative; }
+.bar { display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: space-between; align-items: center; padding: 18px 0; border-bottom: 1px solid rgba(255,255,255,.12); font-size: .92rem; color: var(--on-navy-muted); }
+.bar b { color: var(--on-navy); font-weight: 600; letter-spacing: .02em; }
+.hero-grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 40px; align-items: center; padding-top: 52px; }
+.hero h1 { font: 800 clamp(2.8rem, 8.5vw, 5.6rem)/.92 var(--display); letter-spacing: -.005em; margin: 0 0 20px; text-transform: uppercase; text-wrap: balance; }
+.hero h1 em { font-style: normal; color: var(--amber); }
+.hero p.lead { margin: 0; max-width: 52ch; color: var(--on-navy-muted); font-size: 1.15rem; }
+.hero p.lead strong { color: var(--on-navy); font-weight: 600; }
+
+.panel { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.16); border-radius: 10px; padding: 18px; backdrop-filter: blur(2px); }
+.panel h2 { font: 600 .8rem/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--on-navy-muted); margin: 0 0 14px; }
+.lamps { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.lamps li { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 6px; background: rgba(0,0,0,.22); font-weight: 500; }
+.lamp { width: 12px; height: 12px; border-radius: 50%; flex: none; background: var(--teal); box-shadow: 0 0 0 3px rgba(18,179,160,.22), 0 0 12px var(--teal); }
+.lamp.a { background: var(--amber); box-shadow: 0 0 0 3px rgba(245,165,36,.22), 0 0 12px var(--amber); }
+.lamps small { margin-left: auto; color: var(--on-navy-muted); font: 500 .75rem/1 var(--mono); }
+
+/* Entry cards */
+.entry { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; margin-top: -76px; position: relative; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 26px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 18px 40px -22px rgba(5,24,35,.45); }
+.card .no { font: 500 .78rem/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.card h2 { font: 700 2.2rem/1 var(--display); text-transform: uppercase; margin: 0; }
+.card p { margin: 0; color: var(--muted); }
+.btn { margin-top: 8px; align-self: flex-start; display: inline-flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 24px; border-radius: 8px; text-decoration: none; font: 700 1.05rem/1 var(--body); background: var(--amber); color: var(--amber-ink); }
+.btn.t { background: var(--teal); color: var(--teal-ink); }
+.btn:hover { filter: brightness(1.07); }
+.btn svg { width: 18px; height: 18px; }
+
+/* Sections */
+section { padding: 56px 0 0; }
+.eyebrow { font: 500 .8rem/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--teal); }
+h2.h { font: 700 clamp(2rem, 5vw, 2.9rem)/1 var(--display); text-transform: uppercase; margin: 10px 0 10px; text-wrap: balance; }
+p.sub { margin: 0 0 26px; color: var(--muted); max-width: 62ch; }
+
+.prodi { display: flex; flex-wrap: wrap; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.prodi li { background: var(--surface); border: 1px solid var(--line); border-left: 5px solid var(--teal); border-radius: 8px; padding: 14px 18px; font-weight: 600; }
+.prodi li span { display: block; font: 500 .75rem/1 var(--mono); letter-spacing: .06em; color: var(--muted); margin-bottom: 6px; }
+
+.tracks { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+.track { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.track header { padding: 20px 22px; color: var(--on-navy); background: var(--navy); }
+.track.ta header { background: var(--navy-2); }
+.track header h3 { font: 700 1.9rem/1 var(--display); text-transform: uppercase; margin: 0 0 6px; }
+.track header p { margin: 0; color: var(--on-navy-muted); font-size: .95rem; }
+.track ol { list-style: none; margin: 0; padding: 6px 22px 12px; }
+.track li { display: grid; grid-template-columns: 52px 1fr; gap: 14px; align-items: center; padding: 12px 0; border-bottom: 1px dashed var(--line); }
+.track li:last-child { border-bottom: 0; }
+.rn { font: 700 1.5rem/1 var(--display); background: color-mix(in srgb, var(--amber) 22%, transparent); color: var(--ink); border-radius: 6px; text-align: center; padding: 9px 0 7px; }
+.rn.x { background: transparent; border: 1.5px solid var(--line); color: var(--muted); font-size: 1.2rem; }
+.track li b { font-weight: 600; display: block; line-height: 1.25; }
+.track li span { color: var(--muted); font-size: .9rem; }
+
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin: 0; padding: 0; list-style: none; counter-reset: s; }
+.steps li { counter-increment: s; position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 24px 22px 22px; }
+.steps li::before { content: counter(s); position: absolute; top: -18px; left: 20px; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: var(--amber); color: var(--amber-ink); font: 800 1.3rem/1 var(--display); }
+.steps b { display: block; font: 700 1.45rem/1.1 var(--display); text-transform: uppercase; margin: 6px 0 6px; }
+.steps p { margin: 0; color: var(--muted); }
+
+.fields { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.field { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; }
+.field b { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; font-weight: 600; }
+.field b i { font: normal 500 .68rem/1 var(--mono); letter-spacing: .06em; color: var(--amber-ink); background: var(--amber); padding: 4px 6px; border-radius: 4px; }
+.field b i.o { background: transparent; color: var(--muted); border: 1px solid var(--line); }
+.field span { display: block; margin-top: 6px; color: var(--muted); font-size: .95rem; }
+
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 0; padding: 0; list-style: none; }
+.stats li { background: var(--navy); color: var(--on-navy); border-radius: 12px; padding: 22px 20px; }
+.stats b { display: block; font: 800 2.6rem/1 var(--display); color: var(--amber); }
+.stats span { color: var(--on-navy-muted); font-size: .95rem; }
+
+.help { background: var(--surface); border: 1px solid var(--line); border-left: 5px solid var(--amber); border-radius: 10px; padding: 18px 22px; margin-top: 18px; }
+.help b { font-weight: 600; }
+
+footer { margin-top: 64px; background: var(--navy); color: var(--on-navy-muted); }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 16px 40px; justify-content: space-between; padding-top: 30px; padding-bottom: 34px; font-size: .95rem; }
+footer b { color: var(--on-navy); display: block; font: 700 1.2rem/1.2 var(--display); text-transform: uppercase; letter-spacing: .02em; margin-bottom: 4px; }
+
+@media (max-width: 820px) {
+  .hero-grid, .entry, .tracks, .steps { grid-template-columns: 1fr; }
+  .fields { grid-template-columns: 1fr 1fr; }
+  .stats { grid-template-columns: 1fr 1fr; }
+  .hero { padding-bottom: 100px; }
+  .hero-grid { padding-top: 34px; gap: 28px; }
+  .entry { margin-top: -64px; }
+  .steps { gap: 30px; }
+}
+@media (max-width: 520px) { .fields { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: no-preference) {
+  .btn, .card { transition: transform .18s ease, filter .18s ease; }
+  .btn:hover { transform: translateY(-2px); }
+  .card:hover { transform: translateY(-3px); }
+  .hero h1, .hero p.lead, .panel { animation: rise .6s ease-out both; }
+  .hero p.lead { animation-delay: .08s; }
+  .panel { animation-delay: .16s; }
+  @keyframes rise { from { transform: translateY(12px); opacity: .01; } to { transform: none; opacity: 1; } }
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="bar">
+      <b>Politeknik Negeri Jakarta · Jurusan Teknik Elektro</b>
+      <span>Portal laporan mahasiswa</span>
+    </div>
+
+    <div class="hero-grid">
+      <div>
+        <h1>Laporan Magang &amp; TA, <em>satu pintu.</em></h1>
+        <p class="lead">Kirim laporan <strong>per bab</strong> atau <strong>lengkap</strong>, lalu catat setiap sesi bimbingan. Masuk dengan <strong>akun Google PNJ</strong>.</p>
+      </div>
+
+      <aside class="panel" aria-label="Jenis kiriman yang tersedia">
+        <h2>Jenis kiriman</h2>
+        <ul class="lamps">
+          <li><span class="lamp a"></span>Magang, per bab<small>FORM 1</small></li>
+          <li><span class="lamp a"></span>Magang, laporan lengkap<small>FORM 1</small></li>
+          <li><span class="lamp"></span>TA, per bab<small>FORM 1</small></li>
+          <li><span class="lamp"></span>TA, laporan lengkap<small>FORM 1</small></li>
+          <li><span class="lamp"></span>Log bimbingan<small>FORM 2</small></li>
+        </ul>
+      </aside>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="entry">
+    <article class="card">
+      <span class="no">Formulir 1</span>
+      <h2>Kumpul Laporan</h2>
+      <p>Pilih Magang atau TA, lalu per bab atau laporan lengkap. Unggah file PDF atau DOCX.</p>
+      <a class="btn" href="https://docs.google.com/forms/d/e/1FAIpQLScvyW9kfynF1olkqcQc1f9jnge6z-sezZfkyVJOyokRiydNsQ/viewform" target="_blank" rel="noopener">Buka formulir laporan
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+    </article>
+
+    <article class="card">
+      <span class="no">Formulir 2</span>
+      <h2>Log Bimbingan</h2>
+      <p>Isi setelah tiap sesi: tanggal, topik, arahan pembimbing, dan target berikutnya.</p>
+      <a class="btn t" href="https://docs.google.com/forms/d/e/1FAIpQLSeX-b3ZOCcoPrSJn52gfPXP_kbNuncZ4NT_KnLADFOZTCmdHg/viewform" target="_blank" rel="noopener">Buka log bimbingan
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+    </article>
+  </div>
+
+  <section id="prodi">
+    <span class="eyebrow">Untuk siapa</span>
+    <h2 class="h">Program studi</h2>
+    <p class="sub">Portal ini melayani dua program studi di Jurusan Teknik Elektro.</p>
+    <ul class="prodi">
+      <li><span>D4</span>Instrumentasi dan Kontrol Industri</li>
+      <li><span>D3</span>Elektronika Industri</li>
+    </ul>
+  </section>
+
+  <section id="bab">
+    <span class="eyebrow">Susunan bab</span>
+    <h2 class="h">Bab yang bisa dikumpulkan</h2>
+    <p class="sub">Magang dan TA punya susunan bab berbeda. Di formulir, pilih bab yang sesuai dengan jenis kiriman Anda.</p>
+
+    <div class="tracks">
+      <div class="track">
+        <header>
+          <h3>Laporan Magang</h3>
+          <p>Per bab atau laporan lengkap</p>
+        </header>
+        <ol>
+          <li><div class="rn x">+</div><div><b>Bagian Awal</b><span>Judul, Pengesahan, Kata Pengantar, Daftar Isi</span></div></li>
+          <li><div class="rn">I</div><div><b>Pendahuluan</b></div></li>
+          <li><div class="rn">II</div><div><b>Tinjauan Pustaka</b></div></li>
+          <li><div class="rn">III</div><div><b>Hasil dan Pembahasan</b></div></li>
+          <li><div class="rn">IV</div><div><b>Penutup</b></div></li>
+          <li><div class="rn x">+</div><div><b>Daftar Pustaka</b></div></li>
+          <li><div class="rn x">+</div><div><b>Lampiran</b><span>L-1 sampai L-4</span></div></li>
+        </ol>
+      </div>
+
+      <div class="track ta">
+        <header>
+          <h3>Tugas Akhir (TA)</h3>
+          <p>Per bab atau laporan lengkap</p>
+        </header>
+        <ol>
+          <li><div class="rn">I</div><div><b>Pendahuluan</b></div></li>
+          <li><div class="rn">II</div><div><b>Tinjauan Pustaka</b></div></li>
+          <li><div class="rn">III</div><div><b>Perancangan / Metodologi</b></div></li>
+          <li><div class="rn">IV</div><div><b>Hasil dan Pembahasan</b></div></li>
+          <li><div class="rn">V</div><div><b>Penutup</b></div></li>
+          <li><div class="rn x">+</div><div><b>Lampiran</b><span>serta Abstrak dan bagian awal</span></div></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section id="admin">
+    <span class="eyebrow">Dokumen administrasi Magang</span>
+    <h2 class="h">Selain laporan, kumpulkan juga</h2>
+    <p class="sub">Pilih jenis kiriman <b>Magang - Dokumen Administrasi</b> di Formulir 1, lalu unggah satu dokumen per kiriman (PDF).</p>
+    <ul class="stats" style="margin-top:-8px">
+      <li><b>Surat Penerimaan</b><span>Surat penerimaan/balasan dari mitra.</span></li>
+      <li><b>Form-02</b><span>Kesediaan Dosen Pembimbing.</span></li>
+      <li><b>Form-05</b><span>Logbook kegiatan, disahkan Pembimbing Lapangan.</span></li>
+      <li><b>Form-06</b><span>Formulir Bimbingan.</span></li>
+      <li><b>Surat Keterangan</b><span>Surat keterangan atau sertifikat magang.</span></li>
+      <li><b>Pengesahan</b><span>Halaman pengesahan bertanda tangan.</span></li>
+    </ul>
+    <div class="help"><b>Ringkasan pedoman:</b> Skema Magang Wajib minimal 16 minggu, Magang Pengayaan minimal 1 bulan. Ada dua pembimbing (dosen dan lapangan). Minimal 4 kali bimbingan. Penilaian 60% dari pembimbing lapangan dan 40% dari dosen. Laporan final diunggah juga ke Repositori PNJ.</div>
+  </section>
+
+  <section id="alur">
+    <span class="eyebrow">Alur</span>
+    <h2 class="h">Tiga langkah</h2>
+    <p class="sub">&nbsp;</p>
+    <ol class="steps" style="margin-top:-8px">
+      <li><b>Siapkan file</b><p>Simpan sebagai PDF atau DOCX. Beri nama jelas, misalnya NIM_Bab-III.pdf.</p></li>
+      <li><b>Kirim lewat formulir</b><p>Isi identitas dan dosen pembimbing, pilih jenis kiriman, lalu unggah file.</p></li>
+      <li><b>Catat bimbingan</b><p>Setelah bertemu pembimbing, isi Log Bimbingan pada hari yang sama.</p></li>
+    </ol>
+  </section>
+
+  <section id="log">
+    <span class="eyebrow">Log bimbingan</span>
+    <h2 class="h">Yang dicatat tiap sesi</h2>
+    <p class="sub">Delapan isian di luar identitas. Magang minimal 4 kali bimbingan.</p>
+    <div class="fields">
+      <div class="field"><b>Jenis Bimbingan <i>WAJIB</i></b><span>Bimbingan Magang atau Bimbingan TA</span></div>
+      <div class="field"><b>Bimbingan ke- <i>WAJIB</i></b><span>Urutan sesi, berupa angka</span></div>
+      <div class="field"><b>Tanggal <i>WAJIB</i></b><span>Tanggal bimbingan berlangsung</span></div>
+      <div class="field"><b>Topik dibahas <i>WAJIB</i></b><span>Ringkasan materi yang didiskusikan</span></div>
+      <div class="field"><b>Arahan pembimbing <i>WAJIB</i></b><span>Masukan dan revisi dari dosen</span></div>
+      <div class="field"><b>Tindak lanjut <i class="o">OPSIONAL</i></b><span>Target untuk bimbingan berikutnya</span></div>
+      <div class="field"><b>Perusahaan dan pembimbing lapangan <i class="o">OPSIONAL</i></b><span>Khusus bimbingan Magang</span></div>
+      <div class="field"><b>Bukti bimbingan <i class="o">OPSIONAL</i></b><span>PDF atau foto, maksimal 10 MB</span></div>
+    </div>
+  </section>
+
+  <section id="aturan">
+    <span class="eyebrow">Ketentuan</span>
+    <h2 class="h">Sebelum mengirim</h2>
+    <p class="sub">&nbsp;</p>
+    <ul class="stats" style="margin-top:-8px">
+      <li><b>Akun PNJ</b><span>Formulir hanya terbuka untuk akun Google PNJ.</span></li>
+      <li><b>PDF / DOCX</b><span>Format lain tidak diterima.</span></li>
+      <li><b>100 MB</b><span>Batas ukuran per file laporan.</span></li>
+      <li><b>1 file</b><span>Satu kiriman satu file. Kirim ulang bila ada revisi.</span></li>
+    </ul>
+    <div class="help"><b>Formulir tidak bisa dibuka?</b> Pastikan Anda masuk dengan akun PNJ, bukan Gmail pribadi. Bila ada beberapa akun di peramban, keluar dari yang lain lalu muat ulang halaman.</div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div><b>Kontak</b>Hariyanto, S.Pd., M.T.<br>hariyanto@elektro.pnj.ac.id</div>
+    <div><b>Jurusan Teknik Elektro</b>Politeknik Negeri Jakarta<br>D4 Instrumentasi dan Kontrol Industri<br>D3 Elektronika Industri</div>
+  </div>
+</footer>
+
+</body>
+</html>
